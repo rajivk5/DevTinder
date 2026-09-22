@@ -2,7 +2,8 @@ const express = require('express');
 
 const app = express();
 
-app.get('/test', (req, res) => {
+app.get('/test/:id/:name', (req, res) => {
+    console.log(req.params);
     res.send({ Name: 'John Doe', Age: 30, Occupation: 'Software Engineer' });
 });
 
