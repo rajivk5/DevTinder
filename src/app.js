@@ -2,16 +2,19 @@ const express = require('express');
 
 const app = express();
 
-
-
-app.use('/', (req, res) => {
-    res.send('Home page');
+app.get('/test', (req, res) => {
+    res.send({ Name: 'John Doe', Age: 30, Occupation: 'Software Engineer' });
 });
 
-app.use('/about', (req, res) => {
-    res.send('About page');
+
+app.post('/test', (req, res) => {
+    res.send('Post request successfully received');
 });
 
+
+app.delete('/test', (req, res) => {
+    res.send('Delete request successfully received');
+});
 
 
 app.listen(3000, () => {
