@@ -2,21 +2,20 @@ const express = require('express');
 
 const app = express();
 
-app.get('/test/:id/:name', (req, res) => {
-    console.log(req.params);
-    res.send({ Name: 'John Doe', Age: 30, Occupation: 'Software Engineer' });
-});
+app.use('/user', [
+    (req, res, next) => {
+        next();
+        // res.send('Route Handler 1')
 
-
-app.post('/test', (req, res) => {
-    res.send('Post request successfully received');
-});
-
-
-app.delete('/test', (req, res) => {
-    res.send('Delete request successfully received');
-});
-
+    }, [(req, res, next) => {
+        // res.send('2nd response')
+        next()
+    }], (req, res, next) => {
+        res.send('3rd response')
+        next()
+    }], (req, res, next) => {
+        res.send('4th response')
+    })
 
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
