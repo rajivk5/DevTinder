@@ -2,22 +2,14 @@ const express = require('express');
 
 const app = express();
 
-app.use('/user', [
-    (req, res, next) => {
-        next();
-        // res.send('Route Handler 1')
+const { middleware1, middleware2, middleware3 } = require('./middlewares/auth');
+const userRouter = require('./routs/userRoutes');
 
-    }, [(req, res, next) => {
-        // res.send('2nd response')
-        next()
-    }], (req, res, next) => {
-        res.send('3rd response')
-        next()
-    }], (req, res, next) => {
-        res.send('4th response')
-    })
+app.use(middleware1);
+app.use(middleware2);
+app.use(middleware3);
+app.get('/', userRouter)
 
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
-});
-
+})
