@@ -24,8 +24,8 @@ const middleware2 = (req, res, next) => {
 }
 
 const middleware3 = (req, res, next) => {
-    console.log('middleware3');
-    next();
+    console.log('middleware3 abc');
+    next(); 
 }
 
 
