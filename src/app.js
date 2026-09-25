@@ -1,33 +1,34 @@
 const express = require('express');
-
+const connectDB = require('./config/database')
 const app = express();
-
-const { middleware1, middleware2, middleware3 } = require('./middlewares/auth');
-const userRouter = require('./routs/userRoutes');
-
-// app.use(middleware1);
-// app.use(middleware2);
-// app.use(middleware3);
-// app.get('/', userRouter)
+const User = require('./models/user')
 
 
-app.get("/test", (req, res, next) => {
-    console.log("Route");
-    next(new Error("Something broke"));
-});
+app.post('/singup', async (req, res) => {
+    const user = new User({
+        firstName: 'Nikesh',
+        lastName: 'Kumar',
+        emailId: 'Nikesh@gmail.com',
+        age: 27,
+        gender: 'male',
+    });
 
-app.use((err, req, res, next) => {
-    console.log("Error Handler 1");
+    await user.save();
 
-    next();
-});
-
-app.use((err, req, res, next) => {
-    console.log("Error Handler 2");
-
-    res.status(500).send("Failed");
-});
-
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
+    try {
+        res.send('user added successfully!');
+    } catch (err) {
+        res.status(400).send('There is some error user not added.');
+    }
 })
+
+connectDB().then(() => {
+    console.log('DataBase connnection is successfull');
+    app.listen(3000, () => {
+        console.log('Server is running on port 3000');
+    });
+}).catch((err) => {
+    console.log(err);
+});
+
+
