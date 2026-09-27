@@ -1,26 +1,12 @@
 const express = require('express');
 const connectDB = require('./config/database')
 const app = express();
-const User = require('./models/user')
+const userRouter = require('./routers/user')
 
+app.use(express.json());
 
-app.post('/singup', async (req, res) => {
-    const user = new User({
-        firstName: 'Nikesh',
-        lastName: 'Kumar',
-        emailId: 'Nikesh@gmail.com',
-        age: 27,
-        gender: 'male',
-    });
+app.use('/', userRouter);
 
-    await user.save();
-
-    try {
-        res.send('user added successfully!');
-    } catch (err) {
-        res.status(400).send('There is some error user not added.');
-    }
-})
 
 connectDB().then(() => {
     console.log('DataBase connnection is successfull');
