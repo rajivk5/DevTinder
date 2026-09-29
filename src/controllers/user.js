@@ -1,85 +1,181 @@
-const User = require('../models/userModel')
+const User = require("../models/userModel");
+const bcrypt = require("bcrypt");
+
+
+
 
 const getFeed = async (req, res) => {
-    try {
-        const users = await User.find({});
-        res.send(users);
-    } catch (err) {
-        res.status(400).send('Something went wrong');
-    }
-}
+  try {
+    const users = await User.find({}).select("-password").lean();
+
+    res.status(200).send(users);
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).send("Something went wrong");
+  }
+};
+
+
 
 
 
 const getUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).lean();
 
-    try {
-        const users = await User.find()
-            .select("-password")
-            .lean();
-
-        res.send(users);
-    } catch (err) {
-        res.status(500).send({
-            error: err.message
-        });
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
     }
-}
+
+    res.send(user);
+  } catch (err) {
+    res.status(500).send({
+      error: err.message,
+    });
+  }
+};
+
 
 
 
 const createUser = async (req, res) => {
-    const user = new User(req.body);
-    try {
-        await user.save();
-        res.send('user added successfully!');
-    } catch (err) {
-        res.status(400).send('There is some error user not added.');
+  try {
+    const {
+      firstName,
+      lastName,
+      emailId,
+      password,
+      age,
+      gender,
+      photoUrl,
+      about,
+      skills,
+    } = req.body;
+
+    if (!validator.isStrongPassword(password)) {
+      return res.status(400).json({
+        message: "Password must be strong",
+      });
     }
-}
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: hashedPassword,
+      age,
+      gender,
+      photoUrl,
+      about,
+      skills,
+    });
+
+    await user.save();
+
+    res.status(201).json({
+      message: "User added successfully!",
+    });
+  } catch (err) {
+    console.error(err);
+
+    res.status(400).json({
+      message: "Something went wrong",
+    });
+  }
+};
+
+
+
 
 
 const updateUser = async (req, res) => {
-    const userId = req.body.userId;
-    const data = req.body;
-    try {
-        const user = await User.findByIdAndUpdate(userId, data, {
-            runValidators: true
-        })
-        res.send('User updated successfully')
+  try {
+    const allowedUpdates = [
+      "firstName",
+      "lastName",
+      "age",
+      "gender",
+      "photoUrl",
+      "about",
+      "skills",
+    ];
 
-    } catch (err) {
-        res.status(400).send('somthing went wrong' + err.message)
+    const data = {};
+
+    for (const field of allowedUpdates) {
+      if (req.body[field] !== undefined) {
+        data[field] = req.body[field];
+      }
     }
-}
+
+    if (Object.keys(data).length === 0) {
+      return res.status(400).json({
+        message: "No valid fields provided for update",
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(req.params.id, data, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      message: "User updated successfully",
+      user,
+    });
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
+};
+
+
+
+
+
 
 const deleteUser = async (req, res) => {
-    try {
-        const user = req.body;
-        console.log(user)
-        const delUser = await User.deleteOne(user);
-        if (!delUser) res.status(400).send('User not found')
-        res.send(delUser)
+  try {
+    const userId = req.params.id;
 
-    } catch (err) {
-        res.status(400).send('Somthing went wrong')
+    const deletedUser = await User.findByIdAndDelete(userId);
 
+    if (!deletedUser) {
+      return res.status(404).json({
+        message: "User not found",
+      });
     }
-}
 
+    res.status(200).json({
+      message: "User deleted successfully",
+    });
+  } catch (err) {
+    console.error(err);
 
-const deleteUserById = async (req, res) => {
-    try {
-        console.log('deleting')
-        const delUser = await User.findByIdAndDelete(req.params.id);
-        if (!delUser) res.status(400).send('User not found')
-        res.send(delUser)
+    res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
+};
 
-    } catch (err) {
-        res.status(400).send('Somthing went wrong')
-
-    }
-}
-
-
-module.exports = { getFeed, getUser, createUser, updateUser, deleteUser, deleteUserById };
+module.exports = {
+  getFeed,
+  getUser,
+  createUser,
+  updateUser,
+  deleteUser,
+};

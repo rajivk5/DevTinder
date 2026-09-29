@@ -1,25 +1,22 @@
-const User = require('../models/userModel');
-const express = require('express')
+const express = require("express");
 const router = express.Router();
+const validateObjectId = require("../middlewares/validateObjectId");
 const {
-    getFeed,
-    getUser,
-    createUser, updateUser, deleteUser, deleteUserById
+  getFeed,
+  getUser,
+  createUser,
+  updateUser,
+  deleteUser,
+} = require("../controllers/user");
 
-} = require('../controllers/user')
+router.get("/user/:id", validateObjectId, getUser);
 
+router.get("/feed", getFeed);
 
-router.get('/user', getUser)
+router.delete("/user/:id", validateObjectId, deleteUser);
 
-router.get('/feed', getFeed)
+router.patch("/user/:id", validateObjectId, updateUser);
 
-router.delete('/user/:id', deleteUserById)
+router.post("/signup", createUser);
 
-router.delete('/user', deleteUser)
-
-router.patch('/user', updateUser)
-
-router.post('/signup', createUser)
-
-module.exports = router
-
+module.exports = router;
