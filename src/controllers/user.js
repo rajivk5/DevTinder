@@ -19,7 +19,27 @@ const getFeed = async (req, res) => {
 };
 
 
+const logUser = async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
 
+    const user = await User.findOne({ emailId: emailId }).select("+password");
+    if (!user) throw new Error("Invalid credentials");
+
+    const isVaildPassword = await bcrypt.compare(password, user.password);
+    if (isVaildPassword) {
+      res.status(200).send("login successfully!!")
+    } else {
+      throw new Error("Invalid credentials")
+    }
+
+  } catch (err) {
+    console.error(err);
+    res.status(400).send({
+      error: err.message,
+    });
+  }
+}
 
 
 const getUser = async (req, res) => {
@@ -180,4 +200,5 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
+  logUser
 };
