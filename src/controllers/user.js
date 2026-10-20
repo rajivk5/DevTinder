@@ -1,7 +1,8 @@
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
-
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 
 
@@ -26,8 +27,21 @@ const logUser = async (req, res) => {
     const user = await User.findOne({ emailId: emailId }).select("+password");
     if (!user) throw new Error("Invalid credentials");
 
-    const isVaildPassword = await bcrypt.compare(password, user.password);
-    if (isVaildPassword) {
+    const isPassWordValid = await bcrypt.compare(password, user.password);
+    if (isPassWordValid) {
+
+      //Create a JWT Token
+
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 1000
+      });
+
+
       res.status(200).send("login successfully!!")
     } else {
       throw new Error("Invalid credentials")
@@ -59,8 +73,6 @@ const getUser = async (req, res) => {
     });
   }
 };
-
-
 
 
 const createUser = async (req, res) => {
@@ -110,9 +122,6 @@ const createUser = async (req, res) => {
     });
   }
 };
-
-
-
 
 
 const updateUser = async (req, res) => {
@@ -166,10 +175,6 @@ const updateUser = async (req, res) => {
 };
 
 
-
-
-
-
 const deleteUser = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -194,11 +199,54 @@ const deleteUser = async (req, res) => {
   }
 };
 
+
+const profile = async (req, res) => {
+  try {
+    const token = req.cookies.token;
+
+    if (!token) {
+      return res.status(401).json({
+        message: "Please log in"
+      });
+    }
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+    const user = await User.findById(decoded.userId);
+
+    console.log(user);
+
+    res.send("Cookie received");
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
+}
+
+
+const logOut = async (req, res) => {
+  try {
+    res.clearCookie("token");
+    res.send("Logged out. Cookie cleared!");
+
+  } catch (err) {
+    console.log(err);
+    res.send("Issue on logout");
+
+  }
+}
 module.exports = {
+  profile,
   getFeed,
   getUser,
   createUser,
   updateUser,
   deleteUser,
-  logUser
+  logUser,
+  logOut
 };
