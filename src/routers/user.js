@@ -1,32 +1,31 @@
 const express = require("express");
 const router = express.Router();
-const validateObjectId = require("../middlewares/validateObjectId");
 
 const {
   profile,
-  getFeed,
-  getUser,
   createUser,
-  updateUser,
-  deleteUser,
   logUser,
-  logOut
 } = require("../controllers/user");
 
-router.get("/user/:id", validateObjectId, getUser);
-
-router.get("/feed", getFeed);
-
-router.delete("/user/:id", validateObjectId, deleteUser);
-
-router.patch("/user/:id", validateObjectId, updateUser);
-
-router.post("/login", logUser)
-
-router.get("/profile", profile)
+const { userAuth } = require("../middlewares/userAuth");
 
 router.post("/signup", createUser);
 
-router.post("/logout", logOut);
+router.post("/login", logUser)
+
+router.get("/profile", userAuth, profile)
+
+router.post("/sendconnectionrequest", userAuth, (req, res) => {
+  const user = req.user;
+  try {
+    res.send(`${user.firstName} is send connection`)
+  } catch (error) {
+    res.json({
+      message: "connection is not made due to",
+      error: error
+    })
+  }
+})
+
 
 module.exports = router;
