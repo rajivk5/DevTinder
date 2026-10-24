@@ -10,9 +10,9 @@
   "license": "ISC",
   "author": "Rajiv",
   "type": "commonjs",
-  "main": "src/app.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "nodemon src/app.js"
+    "start": "nodemon src/server.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

@@ -96,16 +96,13 @@ const userSchema = new mongoose.Schema(
 userSchema.methods.getJWT = async function () {
   const user = this;
   const token = await jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-
   return token;
 }
 
 userSchema.methods.PasswordValid = async function (passWordByUser) {
   const user = this;
   const passwordHash = user.password;
-
   const isPassWordValid = await bcrypt.compare(passWordByUser, passwordHash);
-
   return isPassWordValid;
 }
 
